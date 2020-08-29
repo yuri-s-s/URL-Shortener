@@ -11,6 +11,7 @@ router.get('/', (req, res) => {
 
 router.post("/shortener", shortenerController.create)
 router.get("/shortener/:shortUrl", shortenerController.getByShortUrl)
+router.get("/shortener/:shortUrl/details", shortenerController.getByShortUrlDetails)
 
 
 module.exports = router

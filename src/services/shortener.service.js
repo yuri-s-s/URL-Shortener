@@ -9,7 +9,7 @@ const getById = async(id) => {
         return null
     }
 
-    const newShort = `${process.env.BASE_URL}/shortener/${shortener.dataValues.shortUrl}`
+    const newShort = `${process.env.BASE_URL_WEB}/shortener/${shortener.dataValues.shortUrl}`
 
     shortener.dataValues.shortUrl = newShort
 
@@ -67,6 +67,32 @@ const getByShortUrl = async(shortUrl) => {
             click
         })
 
+        return shortener.dataValues.originalUrl
+        
+    } catch (err) {
+        throw new Error(err.message)
+    }
+}
+
+const getByShortUrlDetails = async(shortUrl) => {
+    try {
+
+        const shortener = await Shortener.findOne({
+            where: {
+                shortUrl
+            }
+        })
+
+        if(!shortener) {
+            return null
+        }
+
+        const click = shortener.dataValues.click + 1
+
+        await shortener.update({
+            click
+        })
+
         return getById(shortener.dataValues.id)
         
     } catch (err) {
@@ -76,5 +102,6 @@ const getByShortUrl = async(shortUrl) => {
 
 module.exports = {
     create,
-    getByShortUrl
+    getByShortUrl,
+    getByShortUrlDetails
 }
