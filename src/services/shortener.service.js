@@ -1,107 +1,100 @@
-require('dotenv').config();
+require("dotenv").config();
 
 const { Shortener } = require("../models");
 
-const getById = async(id) => {
-    let shortener = await Shortener.findByPk(id)
+const getById = async (id) => {
+  let shortener = await Shortener.findByPk(id);
 
-    if(!shortener) {
-        return null
+  if (!shortener) {
+    return null;
+  }
+
+  const newShort = `http://${process.env.BASE_URL_WEB}/${shortener.dataValues.shortUrl}`;
+
+  shortener.dataValues.shortUrl = newShort;
+
+  return shortener;
+};
+
+const create = async (url) => {
+  try {
+    const shortener = await Shortener.findOne({
+      where: {
+        originalUrl: url,
+      },
+    });
+
+    if (shortener) {
+      return getById(shortener.dataValues.id);
     }
 
-    const newShort = `${process.env.BASE_URL_WEB}/shortener/${shortener.dataValues.shortUrl}`
+    const shortUrl = `YU${new Date().valueOf()}`;
 
-    shortener.dataValues.shortUrl = newShort
+    const newShortener = await Shortener.create({
+      originalUrl: url,
+      shortUrl,
+    });
 
-    return shortener
-}
-
-const create = async(url) => {
-    try {
-
-        const shortener = await Shortener.findOne({
-            where: {
-                originalUrl: url
-            }
-        })
-
- 
-        if(shortener) {
-            return getById(shortener.dataValues.id)
-        }
-
-        const shortUrl = `YU${new Date().valueOf()}`
-
-        const newShortener = await Shortener.create({
-            originalUrl: url,
-            shortUrl
-        })
-
-        if(!newShortener){
-            return null
-        }
-
-        return getById(newShortener.dataValues.id)
-        
-    } catch (err) {
-        throw new Error(err.message)
+    if (!newShortener) {
+      return null;
     }
-}
 
-const getByShortUrl = async(shortUrl) => {
-    try {
+    return getById(newShortener.dataValues.id);
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
 
-        const shortener = await Shortener.findOne({
-            where: {
-                shortUrl
-            }
-        })
+const getByShortUrl = async (shortUrl) => {
+  try {
+    const shortener = await Shortener.findOne({
+      where: {
+        shortUrl,
+      },
+    });
 
-        if(!shortener) {
-            return null
-        }
-
-        const click = shortener.dataValues.click + 1
-
-        await shortener.update({
-            click
-        })
-
-        return shortener.dataValues.originalUrl
-        
-    } catch (err) {
-        throw new Error(err.message)
+    if (!shortener) {
+      return null;
     }
-}
 
-const getByShortUrlDetails = async(shortUrl) => {
-    try {
+    const click = shortener.dataValues.click + 1;
 
-        const shortener = await Shortener.findOne({
-            where: {
-                shortUrl
-            }
-        })
+    await shortener.update({
+      click,
+    });
 
-        if(!shortener) {
-            return null
-        }
+    return shortener.dataValues.originalUrl;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
 
-        const click = shortener.dataValues.click + 1
+const getByShortUrlDetails = async (shortUrl) => {
+  try {
+    const shortener = await Shortener.findOne({
+      where: {
+        shortUrl,
+      },
+    });
 
-        await shortener.update({
-            click
-        })
-
-        return getById(shortener.dataValues.id)
-        
-    } catch (err) {
-        throw new Error(err.message)
+    if (!shortener) {
+      return null;
     }
-}
+
+    const click = shortener.dataValues.click + 1;
+
+    await shortener.update({
+      click,
+    });
+
+    return getById(shortener.dataValues.id);
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};
 
 module.exports = {
-    create,
-    getByShortUrl,
-    getByShortUrlDetails
-}
+  create,
+  getByShortUrl,
+  getByShortUrlDetails,
+};
